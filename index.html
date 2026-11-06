@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AQbD Validator – Dashboard de simulation</title>
+<style>
+:root{--bg:#f3f6fb;--surface:#ffffff;--surface-2:#f8fafc;--line:#e3e9f2;--ink:#17243a;--muted:#68778d;--blue:#2457a6;--blue-2:#eaf1fc;--cyan:#168caa;--green:#16845b;--green-bg:#e9f7f0;--amber:#b7791f;--amber-bg:#fff5df;--red:#c24145;--red-bg:#fff0f0;--shadow:0 8px 26px rgba(24,45,78,.06)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Inter,'Segoe UI',system-ui,sans-serif}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:15px clamp(16px,3vw,38px);display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(25,45,75,.04)}
+header h1{font-size:19px;letter-spacing:-.35px;margin:0;color:#13243d}header>small{color:var(--muted);font-size:12px}.pill{background:var(--green-bg);color:var(--green);border:1px solid #cdebdc;border-radius:99px;padding:5px 11px;font-size:11px;font-weight:700;letter-spacing:.02em}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}nav button,.row button{background:#fff;color:#34445c;border:1px solid var(--line);border-radius:8px;padding:8px 13px;cursor:pointer;font:inherit;font-weight:600;font-size:12px;transition:.18s ease}nav button:hover,.row button:hover{border-color:#9bb5dc;background:#f6f9ff}nav button.on{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 3px 9px #2457a625}
+main{padding:22px clamp(14px,2.5vw,32px);max-width:1600px;margin:auto}.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:15px;box-shadow:var(--shadow)}.card>b:first-child{display:block;font-size:12px;letter-spacing:.055em;text-transform:uppercase;color:#53647c;margin-bottom:10px}
+.kp{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:15px}.kp div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;border-top:3px solid var(--blue);box-shadow:var(--shadow)}.kp small{display:block;text-transform:uppercase;letter-spacing:.055em;font-size:10px;color:var(--muted);font-weight:700}.kp b{display:block;font-size:25px;letter-spacing:-.5px;color:#1b2c47;margin-top:4px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:24px}.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}canvas{width:100%;height:auto;display:block}#map{cursor:pointer}.sl{display:grid;gap:12px 22px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:12px 0}.sl label{display:block;font-size:12px;color:var(--muted);font-weight:600}.sl b{color:var(--ink);float:right;font-variant-numeric:tabular-nums}.sl input{width:100%;accent-color:var(--blue);margin-top:9px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.row button{padding:9px 14px}.row button.primary,.sim-actions button.primary{background:var(--blue);border-color:var(--blue);color:white}.row button.danger,.sim-actions button.danger{color:var(--red);border-color:#f1c9ca;background:#fff8f8}select{background:white;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit}.chip{padding:5px 10px;border-radius:99px;border:1px solid var(--line);font-size:11px;cursor:pointer;background:var(--surface-2);color:#44556e}.ok{color:var(--green)}.ko{color:var(--red)}.wa{color:var(--amber)}pre{background:#f4f7fb;color:#263650;border:1px solid var(--line);padding:12px;border-radius:9px;overflow:auto;font-size:12px;margin:8px 0}.step{padding:9px 11px;border-left:3px solid #d8e1ee;margin:7px 0;color:var(--muted);background:#fafbfd;border-radius:0 7px 7px 0}.step.on{border-color:var(--blue);color:var(--ink);background:var(--blue-2)}
+table{border-collapse:collapse;width:100%;font-size:12px}td,th{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left}th{background:#f6f8fb;color:#52627a;font-size:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}td{color:#33445d}tr:last-child td{border-bottom:0}#tests table{margin-top:8px}#tests td:last-child{font-weight:800}.section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:4px 2px 14px}.section-heading h2{font-size:18px;letter-spacing:-.3px;margin:0}.section-heading p{margin:3px 0 0;color:var(--muted);font-size:12px}.subtle{font-size:11px;color:var(--muted)}
+.process-card{padding:22px 24px;background:#fff;border:1px solid #dce5ef;box-shadow:0 8px 28px rgba(20,45,75,.07);color:#172b45}
+.process-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.process-heading h2{font-size:20px;letter-spacing:-.025em;margin:4px 0 3px;color:#142b49}.process-heading p{margin:0;color:#718096;font-size:13px}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:#3976ad}.live-tag{white-space:nowrap;border:1px solid #cce9df;background:#f0faf6;color:#167653;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:700}.live-tag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#20a477;margin-right:6px;box-shadow:0 0 0 3px #d7f2e7}.process-legend{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 20px;color:#66788d;font-size:11px}.process-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.dot.green{background:#20a477}.dot.amber{background:#e6a23c}.dot.red{background:#d9534f}.dot.blue{background:#347fca}.process-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:18px;align-items:stretch}.process-step{position:relative;min-width:0;border:1px solid #dce5ef;border-radius:11px;background:#fbfdff;padding:15px 10px 13px;text-align:center;cursor:pointer;transition:all .18s ease;min-height:156px;color:#243b56}.process-step:not(:last-child):after{content:"";position:absolute;right:-19px;top:47px;width:18px;height:2px;background:#c8d5e3}.process-step:not(:last-child):before{content:"";position:absolute;z-index:1;right:-19px;top:43px;border-left:6px solid #c8d5e3;border-top:5px solid transparent;border-bottom:5px solid transparent}.process-step:hover{transform:translateY(-3px);border-color:#8fb5da;box-shadow:0 7px 18px rgba(35,87,135,.10)}.process-step.active{border:2px solid #347fca;background:#f1f7fd;box-shadow:0 0 0 3px #e2effb}.process-step.aqbd{background:#f3f8ff;border-color:#7aa9d8}.process-step.active.aqbd{border-color:#236bb1}.step-icon{width:38px;height:38px;margin:0 auto 10px;border-radius:10px;display:grid;place-items:center;background:#edf3f9;color:#426789;font-size:19px;font-weight:700}.process-step.active .step-icon,.process-step.aqbd .step-icon{background:#dcecff;color:#2169aa}.step-number{font-size:9px;letter-spacing:.1em;color:#8a9bad;font-weight:800}.step-name{display:block;font-size:11px;font-weight:800;line-height:1.35;margin:5px 0 9px;min-height:30px;color:#263e59}.step-state{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 7px;font-size:9px;font-weight:700;background:#eef8f3;color:#16805a}.step-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.process-step.state-1 .step-state{background:#fff6e8;color:#a66a12}.process-step.state-2 .step-state{background:#fff0ef;color:#c13f3b}.aqbd-label{display:block;margin-top:7px;color:#236bb1;font-size:9px;font-weight:800;letter-spacing:.03em}.process-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:17px;padding-top:13px;border-top:1px solid #edf1f5;color:#8493a4;font-size:10px}.focus-note{color:#236bb1;font-weight:700}
+@media(max-width:950px){.process-flow{grid-template-columns:repeat(4,minmax(0,1fr))}.process-step:before,.process-step:after{display:none}}
+@media(max-width:560px){.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.process-heading{display:block}.live-tag{display:inline-block;margin-top:12px}}
+
+
+/* ===== Approved AQbD visual identity ===== */
+:root{--bg:#edf3ff;--surface:#fff;--surface-2:#f7faff;--line:#dce7f7;--ink:#102b52;--muted:#7185a4;--blue:#1261c9;--blue-2:#eaf3ff;--cyan:#2786d9;--green:#159b69;--green-bg:#e6f8f0;--amber:#d88a18;--amber-bg:#fff4df;--red:#d83c52;--red-bg:#fff0f2;--shadow:0 8px 24px rgba(29,73,132,.075)}
+body{background:linear-gradient(135deg,#f5f8ff 0%,#eaf1ff 100%);color:var(--ink);font-family:Inter,'Segoe UI',Arial,sans-serif}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:218px minmax(0,1fr)}
+.sidebar{background:linear-gradient(180deg,#09264d 0%,#0d3265 55%,#09264d 100%);color:#fff;min-height:100vh;padding:24px 14px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;box-shadow:8px 0 30px rgba(12,42,82,.12);z-index:25}
+.brand{height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,.12);margin:0 -2px 26px;text-align:center}.brand-mark{width:48px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#4bc2f1,#1261c9);font-size:28px;font-weight:900;color:white;font-style:italic;box-shadow:0 8px 20px #001b3c66;margin-bottom:10px}.brand strong{font-size:16px;letter-spacing:.01em}.brand small{color:#a9c2e5;font-size:10px;margin-top:3px}.side-label{font-size:9px;font-weight:800;letter-spacing:.16em;color:#7898c0;padding:0 12px 12px}.side-nav{display:flex;flex-direction:column;gap:8px;margin:0}.side-nav button{width:100%;display:flex;align-items:center;gap:12px;padding:13px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#c8d9f0;text-align:left;font:600 12px Inter,'Segoe UI',sans-serif;cursor:pointer;transition:.18s}.side-nav button:hover{background:#ffffff12;color:#fff}.side-nav button.on{background:linear-gradient(90deg,#176bd0,#1553a0);color:#fff;border-color:#347ed2;box-shadow:0 8px 18px #001b3d44}.nav-icon{width:23px;text-align:center;font-size:19px;color:#8fc8ff}.side-bottom{margin-top:auto;display:flex;align-items:center;gap:10px;padding:14px 8px;border-top:1px solid #ffffff18;font-size:11px}.side-bottom small{display:block;color:#a8c0df;font-size:10px;margin-top:3px}.status-light,.ai-pulse{width:9px;height:9px;border-radius:50%;background:#36d69b;box-shadow:0 0 0 4px #36d69b22;flex:none}
+.workspace{min-width:0}.topbar{position:sticky;top:0;z-index:20;min-height:91px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid #dce7f5;box-shadow:0 3px 16px #1b47700a;padding:15px clamp(18px,2.3vw,34px);display:flex;align-items:center;gap:25px;flex-wrap:wrap}.top-title h1{font-size:25px;line-height:1.1;margin:0;color:#102c54;letter-spacing:-.8px}.top-title p{font-size:12px;color:#5d7597;margin:5px 0 0}.top-event{border-left:1px solid #cbd9eb;padding-left:23px;color:#36567f;font-size:12px;font-style:italic;flex:1}.top-event span{color:#9aacc3;padding:0 5px}.top-right{display:flex;align-items:center;gap:15px}.top-date{font-size:9px;letter-spacing:.09em;color:#8295af;font-weight:700}.pill{background:#e9f8f1;color:#087c55;border:1px solid #c8ecdc;border-radius:30px;padding:7px 12px;font-size:10px;font-weight:800;white-space:nowrap}.pill i,.live-tag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#20b77e;margin-right:6px;box-shadow:0 0 0 3px #20b77e22}
+main{padding:22px clamp(15px,2vw,30px);max-width:1750px}.page-intro{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:0 2px 15px}.page-intro h2{font-size:22px;letter-spacing:-.5px;margin:3px 0 2px;color:#102e58}.page-intro p{font-size:12px;color:#7588a4;margin:0}.eyebrow{font-size:9px;font-weight:850;letter-spacing:.14em;color:#347dc1}.live-tag{border:1px solid #ccecdf;background:#f0fbf6;color:#12845c;border-radius:30px;padding:8px 12px;font-size:10px;font-weight:800;white-space:nowrap}.card{border:1px solid #dce7f5;border-radius:14px;box-shadow:var(--shadow);padding:17px;background:#fff}.card>b:first-child{color:#26466e}.process-kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.process-kpis>div{border:1px solid #dce7f5;border-top:0;border-radius:13px;padding:13px 16px;position:relative;overflow:hidden;background:linear-gradient(145deg,#fff,#f8fbff);box-shadow:var(--shadow)}.process-kpis>div:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#2b80d5}.process-kpis small{font-size:9px;color:#7185a2;letter-spacing:.08em}.process-kpis b{font-size:20px;color:#153a6b;margin-top:4px}.process-kpis span{display:block;color:#8b9bb1;font-size:10px;margin-top:2px}
+.process-card{padding:19px 20px 14px;margin-bottom:14px}.process-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}.process-heading h2{font-size:17px;margin:3px 0;color:#14345f}.process-heading p{font-size:11px;color:#7c8fa9;margin:0}.process-legend{display:flex;gap:13px;margin:0;font-size:10px;color:#627895}.process-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:16px;align-items:stretch}.process-step{min-height:150px;padding:13px 8px 11px;border:1px solid #dce7f5;border-radius:12px;background:linear-gradient(160deg,#fff,#f6faff);box-shadow:0 5px 13px #1d4b7b0b;color:#18395f}.process-step:not(:last-child):after{right:-16px;top:52px;width:15px;background:#8db5e5;height:2px}.process-step:not(:last-child):before{right:-16px;top:48px;border-left-color:#4388d5}.process-step:hover{transform:translateY(-3px);border-color:#80b7ed;box-shadow:0 9px 19px #1d5da51b}.process-step.active,.process-step.aqbd{border:1.5px solid #4d9ae7;background:linear-gradient(160deg,#f1f8ff,#eaf4ff);box-shadow:0 0 0 3px #e1efff}.step-number{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e3f0ff;color:#2477c9;font-size:10px;font-weight:900;letter-spacing:0}.step-icon{width:43px;height:40px;margin:7px auto 7px;border-radius:11px;background:#edf5ff;color:#1f6db9;font-size:23px}.step-name{font-size:11px;min-height:31px;color:#18395f;margin:4px 0 8px}.step-state{font-size:9px;padding:5px 9px;background:#e6f8f0;color:#14835c}.process-step.state-1 .step-state{background:#fff3df;color:#b97813}.process-step.state-2 .step-state{background:#fff0f2;color:#c43f53}.aqbd-label{font-size:8px;color:#176ac0;letter-spacing:.08em}.process-foot{margin-top:14px;padding-top:11px;font-size:9px;color:#8798ae;border-top:1px solid #edf2f8}.focus-note{color:#216fc0}
+.production-lower{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:14px}.card-heading h3{font-size:14px;margin:3px 0 10px;color:#17375f}.control-card .sl{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}.sl label{color:#637b9b}.sl b{color:#17375f}.sl input{accent-color:#1972d2}.control-actions{display:flex;gap:8px;flex-wrap:wrap}.control-actions button,.detail-toolbar button{background:#fff;border:1px solid #d6e2f1;border-radius:8px;color:#24476f;padding:9px 12px;font-size:10px;font-weight:750;cursor:pointer}.control-actions button:hover,.detail-toolbar button:hover{background:#f1f7ff;border-color:#8eb7e5}.control-actions .action-danger{color:#c63e51;background:#fff5f6;border-color:#f1cbd2}.live-kpi-list{background:#f7faff;border:1px solid #e4edf8;border-radius:10px;padding:12px;font-size:11px;color:#536d8e;line-height:2}.live-kpi-list b{color:#173d6b}.ai-panel{margin-top:13px;border-top:1px solid #edf2f8;padding-top:12px}.ai-title{font-size:11px;font-weight:800;color:#234a76;display:flex;align-items:center;gap:8px;margin-bottom:6px}.ai-pulse{width:7px;height:7px}.event-log{font-size:10px;color:#7085a1;max-height:105px;overflow:auto}.event-log div{padding:5px 0;border-bottom:1px solid #edf2f8}.event-log .ko,.event-log .alert{color:#c83f52}.event-log .ok,.event-log .good{color:#13865c}
+.detail-toolbar{margin:0 0 10px}.detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}.machine-card{grid-column:1/-1}.detail-card{min-width:0}.detail-card p{color:#617997;font-size:12px}.detail-card b{color:#1d4776}.detail-layout canvas{max-height:280px}.chip{background:#f3f8ff;color:#315c8a;border-color:#d8e6f6}.chip:hover{background:#e5f1ff}.step{background:#f7faff;border-color:#d9e7f7;color:#6c809b}.step.on{background:#eaf3ff;border-color:#2679ce;color:#173d69}
+.grid{gap:14px}.kp{gap:12px}.kp div{border:1px solid #dce7f5;border-top:3px solid #277bd0;border-radius:13px;box-shadow:var(--shadow)}.kp small{color:#7185a2}.kp b{color:#173b68}.sim-chart{border-color:#dce7f5;border-radius:12px;box-shadow:var(--shadow)}.sim-actions button,.row button{border-color:#d8e4f3;color:#24476f}.sim-actions button.primary,.row button.primary{background:#1261c9;color:#fff;border-color:#1261c9}.sim-actions button.danger,.row button.danger{background:#fff4f5;color:#c63d51;border-color:#f0cbd1}.sim-status{background:#eef5ff;color:#365d8b;border:1px solid #dbe9fa}.sim-kpi{background:#f8fbff;border-color:#e1ebf7}.sim-kpi strong{color:#153b6a}.sim-controls label{color:#657d9c}.sim-controls input{accent-color:#176bce}.sim-grid{grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr)}
+footer{color:#8799b1;border-top:1px solid #e0e9f5;margin:0 25px;padding:16px;font-size:10px}
+@media(max-width:1150px){.app-shell{grid-template-columns:190px minmax(0,1fr)}.process-flow{grid-template-columns:repeat(4,minmax(0,1fr))}.process-step:before,.process-step:after{display:none}.top-event{display:none}}
+@media(max-width:760px){.app-shell{display:block}.sidebar{position:relative;height:auto;min-height:0;padding:10px 12px;display:block}.brand{height:auto;display:flex;flex-direction:row;justify-content:flex-start;gap:9px;margin:0 0 10px;padding:0 5px 10px}.brand-mark{width:30px;height:30px;font-size:18px;margin:0}.brand small,.side-label,.side-bottom{display:none}.side-nav{flex-direction:row;overflow-x:auto}.side-nav button{width:auto;white-space:nowrap;padding:9px 11px}.topbar{position:relative;min-height:0;padding:14px}.top-title h1{font-size:21px}.top-right{margin-left:auto}.top-date{display:none}main{padding:14px}.process-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.production-lower,.detail-layout,.sim-grid{grid-template-columns:1fr}.machine-card{grid-column:auto}.control-card .sl{grid-template-columns:1fr}.process-heading{align-items:flex-start;flex-direction:column}.process-legend{gap:9px}.page-intro{align-items:flex-start;flex-direction:column}.top-event{display:none}}
+
+[hidden]{display:none!important}
+/* Interactive MATLAB panel */
+.matlab-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.matlab-head h2{margin:0;font-size:18px}.live-indicator{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.live-indicator:before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px var(--green-bg)}.sim-actions{display:flex;gap:8px;flex-wrap:wrap}.sim-actions button{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:#fff;color:#34445c;font-weight:700;font-size:12px;cursor:pointer}.sim-actions button:hover{filter:brightness(.98);transform:translateY(-1px)}.sim-status{padding:10px 12px;border-radius:8px;background:var(--blue-2);color:#31527e;font-size:12px;margin:10px 0}.sim-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0}.sim-kpi{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe}.sim-kpi span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:.05em}.sim-kpi strong{display:block;font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}.sim-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:14px}.sim-chart{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;min-width:0}.sim-chart h3{font-size:12px;margin:0 0 7px;color:#53647c}.sim-chart canvas{width:100%;height:auto}.sim-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.sim-controls label{font-size:11px;color:var(--muted);font-weight:650}.sim-controls input{display:block;width:100%;margin-top:7px;accent-color:var(--blue)}.sim-controls b{float:right;color:var(--ink)}.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:7px}.legend i{display:inline-block;width:16px;height:3px;vertical-align:middle;margin-right:5px;border-radius:2px}.event-log{max-height:130px;overflow:auto;font-size:11px;color:var(--muted)}.event-log div{padding:5px 0;border-bottom:1px solid #eef1f5}.event-log .alert{color:var(--red)}.event-log .good{color:var(--green)}@media(max-width:850px){header{position:relative}nav{margin-left:0;width:100%}.sim-grid{grid-template-columns:1fr}}@media(max-width:560px){main{padding:12px}.card{padding:12px}.kp b{font-size:21px}nav button{flex:1}}
+
+/* ===== Pixel-matched reference layout ===== */
+:root{--navy:#09264f;--navy2:#0d376d;--blue:#1264cc;--ink:#102c53;--muted:#6e83a1;--line:#dce7f7;--bg:#edf3ff;--green:#159b69;--amber:#e99a27;--red:#d83c52}
+body{background:linear-gradient(125deg,#f4f7ff,#eaf1ff);color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif}
+.app-shell{grid-template-columns:200px minmax(0,1fr);min-height:100vh}
+.sidebar{background:linear-gradient(180deg,#09264d,#0c3264 58%,#09264d);padding:18px 10px 16px;min-height:100vh}
+.brand{height:140px;margin:0 -10px 18px;padding-bottom:15px}
+.brand-mark{width:52px;height:44px;border-radius:15px;font-size:28px;margin-bottom:8px}
+.side-label{display:none}
+.side-nav{gap:7px}
+.side-nav button{border-radius:0 12px 12px 0;padding:13px 11px;font-size:12px}
+.side-nav button.on{background:linear-gradient(90deg,#176bd0,#1553a0);border-left:4px solid #35b8f2}
+.side-bottom{margin-top:auto}
+.workspace{min-width:0}
+.topbar{min-height:91px;padding:12px 26px;display:flex;align-items:center;gap:24px;background:rgba(247,250,255,.94);border-bottom:1px solid #dce7f7;box-shadow:none}
+.top-title h1{font-size:34px;line-height:1.05;letter-spacing:-1.2px;color:#102b52;margin:0}
+.top-title p{font-size:15px;font-style:italic;color:#294c78;margin:5px 0 0}
+.top-event{border-left:2px solid #c7d7ee;padding:12px 0 12px 28px;color:#294b77;font-size:16px;white-space:nowrap}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:15px;white-space:nowrap}
+.top-date{font-size:12px;color:#4c6689}
+.pill{background:#e6f7f1;color:#116c50;border:1px solid #bfe9d9;padding:7px 13px;font-size:11px}
+.pill i{display:inline-block;width:8px;height:8px;background:#19a36f;border-radius:50%;margin-right:6px}
+.top-tabs{display:flex;gap:12px;padding:10px 26px 8px;background:linear-gradient(90deg,#e7efff,#f4f7ff);border:0;margin:0}
+.top-tabs button{border:1px solid #e0e9f8;background:#f7faff;color:#15355f;border-radius:13px;padding:12px 22px;font-size:13px;font-weight:750;box-shadow:0 3px 12px rgba(35,75,130,.06);cursor:pointer}
+.top-tabs button.on{background:#1261c9;color:white;border-color:#1261c9;box-shadow:0 5px 13px #1261c933}
+main{max-width:none;margin:0;padding:0 18px 16px}
+.card{background:#fff;border:1px solid #e0e9f7;border-radius:14px;box-shadow:0 6px 20px rgba(33,75,135,.065);padding:14px;margin-bottom:0}
+.process-card{padding:13px 18px 14px;margin:0 0 14px;background:rgba(255,255,255,.76);border:1px solid #e1eafa;border-radius:15px}
+.process-heading{align-items:center;margin-bottom:10px}
+.chain-title{font-size:18px;font-weight:800;color:#102e56;letter-spacing:-.3px}
+.process-legend{margin:0;gap:20px;font-size:12px;color:#18365e}
+.process-legend .dot{width:11px;height:11px}
+.process-flow{grid-template-columns:repeat(7,minmax(0,1fr));gap:30px}
+.process-step{min-height:132px;padding:9px 8px 8px;border-radius:12px;background:linear-gradient(180deg,#fff,#f7faff);box-shadow:0 4px 12px rgba(37,78,137,.08);border:1px solid #e1eafa}
+.process-step:not(:last-child):after{right:-25px;top:55px;width:20px;height:2px;background:#4e91d5}
+.process-step:not(:last-child):before{right:-25px;top:51px;border-left-color:#4e91d5}
+.process-step.active{border:2px solid #3987dc;background:#eff6ff;box-shadow:0 0 0 3px #e2efff,0 6px 14px #2767aa20}
+.step-number{display:grid;place-items:center;margin:-1px auto 6px;width:22px;height:22px;border-radius:50%;background:#4c9be6;color:white;font-size:11px;letter-spacing:0}
+.process-step.active .step-number{background:#1358ad}
+.step-icon{width:38px;height:34px;margin:0 auto 4px;background:transparent;color:#1762ad;font-size:25px}
+.step-name{font-size:12px;line-height:1.2;min-height:30px;margin:2px 0 6px;color:#112e56}
+.step-state{font-size:10px;padding:4px 9px}
+.aqbd-label{display:none}
+.hero-dashboard{display:grid;grid-template-columns:270px minmax(0,1.25fr) minmax(0,1.03fr);gap:12px;align-items:stretch}
+.hero-controls{padding:16px 17px;min-height:0}
+.hero-card-title{font-size:15px;font-weight:800;color:#122f58;letter-spacing:-.25px;margin-bottom:13px}
+.hero-controls .sl{display:grid;grid-template-columns:1fr;gap:13px;margin:5px 0 12px}
+.hero-controls .sl label{font-size:12px;color:#18385f;font-weight:650}
+.hero-controls .sl label:has(#s_sp),.hero-controls .sl label:has(#s_hu){display:none}
+.hero-controls .sl b{float:right;color:#1c3d69;font-size:12px}
+.hero-controls .sl input{width:100%;margin-top:6px;accent-color:#1261c9}
+.disturb-label{display:block;color:#18385f;font-size:12px;font-weight:650;margin:8px 0 12px}
+.disturb-label select{display:block;width:100%;margin-top:5px;background:#f5f8ff;border:1px solid #d8e4f4;color:#16365f;border-radius:8px;padding:8px}
+.control-actions{display:grid;grid-template-columns:1fr;gap:7px}
+.control-actions button{border:1px solid #d2e0f2;background:#f5f8ff;color:#143c6d;border-radius:9px;padding:9px 10px;font-size:12px;font-weight:750;cursor:pointer}
+.control-actions button.primary{background:#125ab3;color:white;border-color:#125ab3}
+.control-actions button.action-danger{background:#fff0f1;color:#b52f42;border-color:#efb9c1}
+.info-note{margin-top:14px;padding:12px;border-radius:10px;background:#eaf2ff;color:#28598e;font-size:12px;line-height:1.45}
+.hero-center,.hero-right{display:grid;grid-template-rows:minmax(0,1.35fr) minmax(0,.8fr);gap:12px;min-width:0}
+.hero-quality,.hero-impact,.hero-multivariate,.hero-state,.hero-recommend{min-width:0;overflow:hidden}
+.hero-quality{padding:14px 15px 8px}
+.hero-impact{padding:12px 15px 8px}
+.hero-multivariate{padding:14px 15px 8px}
+.chart-legend{display:flex;justify-content:center;align-items:center;gap:17px;flex-wrap:wrap;color:#18375f;font-size:10px;margin:-3px 0 3px}
+.chart-legend i{display:inline-block;width:15px;height:6px;border-radius:5px;margin-right:4px;vertical-align:middle;background:#2386d9}
+.chart-legend .legend-dash{background:repeating-linear-gradient(90deg,#2386d9 0 5px,transparent 5px 8px);height:2px}
+.chart-legend .legend-band{background:#d9ecff}
+.chart-legend .legend-orange{background:#e99a27}
+.chart-legend .legend-green{background:#45aa7b}
+.chart-legend .legend-purple{background:#8766b7}
+.hero-quality canvas{width:100%;height:calc(100% - 44px);min-height:190px}
+.hero-impact canvas{width:100%;height:calc(100% - 40px);min-height:120px}
+.hero-multivariate canvas{width:100%;height:calc(100% - 42px);min-height:190px}
+.hero-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-height:0}
+.hero-state{padding:12px}
+.state-content{display:flex;align-items:center;justify-content:space-around;gap:8px;height:calc(100% - 30px)}
+.gauge{width:118px;height:118px;flex:0 0 118px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:9px solid #36a879;box-shadow:inset 0 0 0 5px #e8f7f0;color:#0e6949;background:#fff}
+.gauge strong{font-size:25px;line-height:1.1}
+.gauge span{font-size:11px;font-weight:750;color:#18375f;margin-top:4px}
+.state-checks{display:flex;flex-direction:column;gap:9px;font-size:10px;color:#25466d}
+.state-checks span:first-letter{color:#1da16c}
+.hero-recommend{padding:13px;background:linear-gradient(145deg,#0b2b55,#08234a);color:white}
+.hero-recommend .hero-card-title{color:white;border-bottom:1px solid #244a78;padding-bottom:10px}
+.recommend-content strong{display:block;color:#58e0ad;font-size:14px;margin:16px 0 8px}
+.recommend-content p{font-size:11px;color:#e2ecfa;margin:0}
+.hero-recommend.warning .recommend-content strong{color:#ffbf68}
+.hero-legacy{display:none}
+#phv{margin-bottom:12px}
+#phv .detail-layout{grid-template-columns:1fr 1fr}
+footer{display:none}
+@media(max-width:1200px){.app-shell{grid-template-columns:180px minmax(0,1fr)}.hero-dashboard{grid-template-columns:240px minmax(0,1fr)}.hero-right{grid-column:1/-1;grid-template-columns:1fr 1fr;grid-template-rows:250px}.hero-bottom{height:250px}.process-flow{gap:18px}.process-step:not(:last-child):before,.process-step:not(:last-child):after{display:none}}
+@media(max-width:850px){.app-shell{display:block}.sidebar{position:relative;height:auto;min-height:0;padding:8px 10px}.brand{height:auto;display:flex;flex-direction:row;gap:10px;margin:0 0 8px;border:0}.brand-mark{width:32px;height:32px;margin:0}.brand small,.side-bottom{display:none}.side-nav{flex-direction:row;overflow:auto}.side-nav button{white-space:nowrap}.topbar{min-height:0;flex-wrap:wrap;padding:13px}.top-title h1{font-size:25px}.top-event{display:none}.top-right{margin-left:auto}.top-tabs{padding:8px 12px;overflow:auto}.top-tabs button{white-space:nowrap;padding:10px 13px}main{padding:0 10px 12px}.process-flow{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hero-dashboard{grid-template-columns:1fr}.hero-center,.hero-right{grid-template-rows:250px 210px}.hero-right{grid-column:auto;grid-template-columns:1fr;grid-template-rows:250px 210px}.hero-bottom{height:210px}}
+@media(max-width:560px){.process-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.process-heading{align-items:flex-start;flex-direction:column}.hero-bottom{grid-template-columns:1fr;height:auto}.state-content{min-height:145px}.hero-center,.hero-right{grid-template-rows:260px 220px}.hero-right{grid-template-rows:260px auto}.hero-recommend{min-height:180px}}
+
+</style></head><body>
+<div class="app-shell">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">B</div><strong>Biopharm SPA</strong><small>Innovation for Better Health</small></div>
+  <div class="side-label">ESPACE DE TRAVAIL</div>
+  <nav class="side-nav">
+    <button class="on" data-t="t1"><span class="nav-icon">▦</span><span>Simulation AQbD</span></button>
+    <button data-t="t2"><span class="nav-icon">⌁</span><span>Résultats & Analyses</span></button>
+    <button data-t="t3"><span class="nav-icon">●</span><span>À propos</span></button>
+  </nav>
+  <div class="side-bottom"><span class="status-light"></span><div><b>AQbD Validator</b><small>ICH Q2(R2) · AEC 2026</small></div></div>
+</aside>
+<div class="workspace">
+<header class="topbar"><div class="top-title"><h1>AQbD Validator</h1><p>Simulation interactive et analyse des résultats</p></div><div class="top-event">Algerian Engineering Competition 2026</div><div class="top-right"><span class="pill"><i></i> Simulation en cours</span><span class="top-date">06 Nov. 2026 · 19:42</span></div></header>
+<nav class="top-tabs" aria-label="Navigation principale">
+ <button class="on" data-t="t1">⚗ &nbsp; Simulation MATLAB</button>
+ <button data-t="t2">▥ &nbsp; Statistiques AQbD</button>
+ <button data-t="t3">▦ &nbsp; Résultats & Performances</button>
+</nav>
+<main>
+<section id="t1">
+ <div id="mapv" class="card process-card">
+  <div class="process-heading"><div class="chain-title">▣ &nbsp; Chaîne de Production</div><div class="process-legend"><span><i class="dot green"></i> Conforme</span><span><i class="dot amber"></i> À surveiller</span><span><i class="dot red"></i> Alerte</span></div></div>
+  <div id="processFlow" class="process-flow" aria-label="Étapes de la chaîne de production"></div>
+ </div>
+ <div id="phv" hidden>
+  <div class="row detail-toolbar"><button id="back" class="back-button">← Retour à la chaîne</button><span id="chips" class="row"></span></div>
+  <div class="detail-layout"><div class="card machine-card"><div class="card-heading"><h3>Équipement en fonctionnement</h3></div><canvas id="mach" width="1000" height="300"></canvas></div>
+   <div class="card detail-card" id="desc"></div><div class="card detail-card" id="steps" hidden></div>
+   <div class="card detail-card"><div class="card-heading"><h3>Évolution du paramètre critique</h3></div><canvas id="chart" width="600" height="260"></canvas></div>
+  </div>
+ </div>
+ <div class="hero-dashboard">
+  <div class="card hero-controls">
+   <div class="hero-card-title">☷ &nbsp; Paramètres de Simulation</div>
+   <div class="sl" id="csl"></div>
+   <label class="disturb-label">Perturbation de procédé
+    <select id="disturbance"><option value="none">Aucune</option><option value="all">Perturbation combinée</option><option value="drift">Dérive instrumentale</option><option value="noise">Bruit de mesure</option></select>
+   </label>
+   <div class="control-actions">
+    <button id="resume-process" class="primary">▶ &nbsp; Reprendre</button>
+    <button id="pause-process">Ⅱ &nbsp; Pause</button>
+    <button id="bf" class="action-danger">⚠ &nbsp; Injecter une perturbation</button>
+    <button id="br">↻ &nbsp; Réinitialiser</button>
+   </div>
+   <div class="info-note">ⓘ &nbsp; Les résultats s'actualisent en temps réel.</div>
+   <div class="hero-hidden" id="ba">IA auto : OFF</div>
+  </div>
+  <div class="hero-center">
+   <div class="card hero-quality">
+    <div class="hero-card-title">⌁ &nbsp; Profil de Qualité du Produit</div>
+    <div class="chart-legend"><span><i class="legend-blue"></i> Valeurs actuelles</span><span><i class="legend-dash"></i> Spécifications</span><span><i class="legend-band"></i> Tolérance</span></div>
+    <canvas id="hero-quality-chart" width="760" height="300"></canvas>
+   </div>
+   <div class="card hero-impact">
+    <div class="hero-card-title">⚗ &nbsp; Effet des Perturbations</div>
+    <div class="chart-legend"><span><i class="legend-blue"></i> Sans perturbation</span><span><i class="legend-orange"></i> + Bruit</span><span><i class="legend-green"></i> + Dérive</span></div>
+    <canvas id="hero-impact-chart" width="600" height="230"></canvas>
+   </div>
+  </div>
+  <div class="hero-right">
+   <div class="card hero-multivariate">
+    <div class="hero-card-title">▥ &nbsp; Analyse Multivariée</div>
+    <div class="chart-legend"><span><i class="legend-blue"></i> SFSTP</span><span><i class="legend-purple"></i> CONFORME</span><span><i class="legend-orange"></i> Cochran</span><span><i class="legend-green"></i> Levene</span></div>
+    <canvas id="hero-multi-chart" width="600" height="300"></canvas>
+   </div>
+   <div class="hero-bottom">
+    <div class="card hero-state"><div class="hero-card-title">✓ &nbsp; État du Processus</div><div class="state-content"><div class="gauge"><strong id="hero-quality-value">98.7%</strong><span>Conforme</span></div><div class="state-checks"><span>● &nbsp; Spécifications : OK</span><span>● &nbsp; Stabilité : OK</span><span>● &nbsp; Robustesse : OK</span><span>● &nbsp; Capabilité : OK</span></div></div></div>
+    <div class="card hero-recommend"><div class="hero-card-title">♙ &nbsp; Recommandation</div><div class="recommend-content"><strong id="hero-recommend-title">✓ &nbsp; Processus sous contrôle</strong><p id="hero-recommend-text">Aucune action corrective requise.</p></div></div>
+   </div>
+  </div>
+ </div>
+ <div class="hero-legacy" id="kpi"></div><div class="hero-legacy" id="ailog"></div>
+ <div hidden><span id="kpi-steps"></span><span id="kpi-line-state"></span><span id="kpi-good"></span><span id="kpi-reject"></span></div>
+</section>
+<section id="t2" hidden>
+ <div class="section-heading"><div><h2>Validation statistique AQbD</h2><p>Analyse des injections HPLC et vérification des critères ICH Q2(R2).</p></div><span class="subtle">ANALYSE EN TEMPS RÉEL</span></div>
+ <div class="card"><div class="row"><label>Dataset HPLC <select id="ds"></select></label><label>Produit (SFSTP) <select id="pr"></select></label>
+  <label><input type="checkbox" id="live" checked> Nouvelles injections en continu</label><button id="renew" style="background:var(--l);color:var(--t);border:1px solid #334155;border-radius:8px;padding:6px 12px">Tirer de nouvelles injections</button></div>
+  <div class="sl" id="ssl"></div></div>
+ <div class="grid"><div class="card"><canvas id="c1" width="600" height="260"></canvas></div><div class="card"><canvas id="c2" width="600" height="260"></canvas></div>
+  <div class="card"><canvas id="c3" width="600" height="260"></canvas></div><div class="card" id="tests"></div></div>
+</section>
+<section id="t3" hidden>
+ <div class="section-heading"><div><h2>Simulation MATLAB interactive</h2><p>Comportement de la méthode analytique sous conditions nominales et perturbées.</p></div><span class="subtle">MODÈLE DE SIMULATION · AQbD</span></div>
+ <div class="card" id="matlab-sim">
+  <div class="matlab-head"><h2>Réponse du système en direct</h2><span class="live-indicator" id="matlab-live">Simulation active</span></div>
+  <p class="subtle">Modifiez les paramètres ou injectez une perturbation pour observer l'effet sur le signal, l'erreur de mesure et la conformité du profil SFSTP.</p>
+  <div class="sim-actions">
+   <button class="primary" id="sim-pause">Ⅱ Mettre en pause</button><button class="danger" id="sim-disturb">⚡ Injecter une perturbation</button><button id="sim-drift">↗ Ajouter une dérive</button><button id="sim-noise">〰 Augmenter le bruit</button><button id="sim-recover">✓ Revenir au nominal</button><button id="sim-reset">↺ Réinitialiser</button>
+  </div>
+  <div class="sim-status" id="sim-status">Conditions nominales — acquisition des mesures en cours.</div>
+  <div class="sim-kpis">
+   <div class="sim-kpi"><span>Réponse mesurée</span><strong id="sim-response">100.0 %</strong></div>
+   <div class="sim-kpi"><span>Erreur relative</span><strong id="sim-error">0.0 %</strong></div>
+   <div class="sim-kpi"><span>Répétabilité (RSD)</span><strong id="sim-rsd">0.35 %</strong></div>
+   <div class="sim-kpi"><span>État de validation</span><strong id="sim-valid" class="ok">CONFORME</strong></div>
+  </div>
+  <div class="sim-grid">
+   <div class="sim-chart"><h3>Évolution du titre mesuré — fenêtre glissante</h3><canvas id="sim-response-chart" width="900" height="300"></canvas><div class="legend"><span><i style="background:#2457a6"></i>Réponse mesurée</span><span><i style="background:#c24145"></i>Limites de spécification (95–105 %)</span><span><i style="background:#16845b"></i>Cible (100 %)</span></div></div>
+   <div class="sim-chart"><h3>Impact des perturbations</h3><canvas id="sim-impact-chart" width="500" height="300"></canvas><div class="subtle">Comparaison de l'écart absolu par niveau de perturbation.</div></div>
+  </div>
+  <div class="card" style="margin:14px 0 0;background:#fbfcfe;box-shadow:none">
+   <b>Paramètres de simulation</b><div class="sim-controls">
+    <label>Biais procédé <b id="sim-bias-val">0.0 %</b><input id="sim-bias" type="range" min="-6" max="6" step="0.1" value="0"></label>
+    <label>Bruit de mesure <b id="sim-noise-val">0.35 %</b><input id="sim-noise-level" type="range" min="0.05" max="3" step="0.05" value="0.35"></label>
+    <label>Dérive instrument <b id="sim-drift-val">0.00 %/min</b><input id="sim-drift-level" type="range" min="0" max="2" step="0.05" value="0"></label>
+    <label>Hétéroscédasticité <b id="sim-hetero-val">0.0</b><input id="sim-hetero" type="range" min="0" max="5" step="0.1" value="0"></label>
+   </div>
+  </div>
+  <div class="event-log" id="sim-log"><b>Journal des événements</b><div class="good">Initialisation : paramètres nominaux chargés.</div></div>
+ </div>
+ <div class="kp" id="mkp"></div>
+ <div class="card"><b>Résultats par dataset HPLC (30 points, plan combiné)</b><table id="mtab"></table></div>
+ <div class="grid">
+  <div class="card"><b>Profil d'exactitude SFSTP par produit</b><table id="mprod"></table></div>
+  <div class="card"><b>Reproduire dans MATLAB</b><p><small>Paramètres actuels (onglet 2) pour <code>aqbd_live_simulation.m</code> :</small></p><div class="row"><button id="cp2">Copier</button></div><pre id="xml"></pre><pre>&gt;&gt; aqbd_live_simulation</pre></div>
+ </div>
+ <small>Modèle et décisions identiques au script <code>aqbd_live_simulation.m</code> (Mandel, Lack-of-Fit, Cochran, Levene, Durbin-Watson ; OLS/WLS ; profil SFSTP β-expectation ; budget). Résultats calculés ici avec une graine fixe : MATLAB n'a pas été exécuté pour produire cette page, et ses nombres exacts varieront avec son propre générateur aléatoire.</small>
+</section></main><footer>AQbD Validator · Algerian Engineering Competition 2026 · Biopharm SPA</footer></div></div>
+<script>
+const $=s=>document.querySelector(s),C={g:'#159b69',a:'#d88a18',r:'#d83c52',c:'#2786d9',t:'#17375f',m:'#7185a4'};
+const rn=()=>{let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.2831853*Math.random())};
+const V=k=>+$('#s_'+k).value,setV=(k,v)=>{$('#s_'+k).value=v;$('#v_'+k).textContent=v};
+function mk(box,defs,cb){defs.forEach(([k,l,lo,hi,v,st])=>{const d=document.createElement('label');d.innerHTML=`${l} <b id="v_${k}">${v}</b><input type=range min=${lo} max=${hi} step=${st} value=${v} id="s_${k}">`;$(box).append(d);d.querySelector('input').oninput=e=>{$('#v_'+k).textContent=e.target.value;cb&&cb(k)}})}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x.dataset.t===b.dataset.t));['t1','t2','t3'].forEach(t=>$('#'+t).hidden=t!==b.dataset.t);if(b.dataset.t==='t3'){exportCode();results()}else if(b.dataset.t==='t2')calc()});
+/* ---------- maths ---------- */
+function lgam(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.001208650973866179,-.000005395239384953];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const q of c)s+=q/++y;return -t+Math.log(2.5066282746310005*s/x)}
+function bcf(a,b,x){const tn=1e-30,qab=a+b,qap=a+1,qam=a-1;let c=1,d=1-qab*x/qap;if(Math.abs(d)<tn)d=tn;d=1/d;let h=d;for(let m=1;m<200;m++){const m2=2*m;let aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;if(Math.abs(d)<tn)d=tn;c=1+aa/c;if(Math.abs(c)<tn)c=tn;d=1/d;h*=d*c;aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;if(Math.abs(d)<tn)d=tn;c=1+aa/c;if(Math.abs(c)<tn)c=tn;d=1/d;const e=d*c;h*=e;if(Math.abs(e-1)<3e-7)break}return h}
+function ib(x,a,b){if(x<=0)return 0;if(x>=1)return 1;const bt=Math.exp(lgam(a+b)-lgam(a)-lgam(b)+a*Math.log(x)+b*Math.log(1-x));return x<(a+1)/(a+b+2)?bt*bcf(a,b,x)/a:1-bt*bcf(b,a,1-x)/b}
+const Fp=(F,d1,d2)=>F<=0?1:ib(d2/(d2+d1*F),d2/2,d1/2);
+function tq(p,v){let lo=0,hi=200;for(let i=0;i<60;i++){const m=(lo+hi)/2,cdf=1-.5*ib(v/(v+m*m),v/2,.5);if(cdf<p)lo=m;else hi=m}return(lo+hi)/2}
+function wls(x,y,w){let S=0,X=0,Y=0,XX=0,XY=0;x.forEach((xi,i)=>{const q=w[i];S+=q;X+=q*xi;Y+=q*y[i];XX+=q*xi*xi;XY+=q*xi*y[i]});const b=(S*XY-X*Y)/(S*XX-X*X);return[(Y-b*X)/S,b]}
+function quadSSE(x,y){const n=x.length;let A=[[0,0,0,0],[0,0,0,0],[0,0,0,0]];x.forEach((xi,i)=>{for(let r=0;r<3;r++){for(let c=0;c<3;c++)A[r][c]+=xi**(r+c);A[r][3]+=y[i]*xi**r}});for(let i=0;i<3;i++){let p=i;for(let r=i+1;r<3;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];for(let r=0;r<3;r++)if(r!=i){const f=A[r][i]/A[i][i];for(let c=i;c<4;c++)A[r][c]-=f*A[i][c]}}const b=A.map((r,i)=>r[3]/r[i]);return y.reduce((s,yi,i)=>s+(yi-b[0]-b[1]*x[i]-b[2]*x[i]**2)**2,0)}
+const mean=a=>a.reduce((s,v)=>s+v,0)/a.length,sdv=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1))};
+function plot(cv,ser,o){const g=cv.getContext('2d'),W=cv.width,H=cv.height,L=44,R=10,T=24,B=22;g.clearRect(0,0,W,H);
+ const px=x=>L+(x-o.x0)/(o.x1-o.x0)*(W-L-R),py=y=>H-B-(y-o.y0)/(o.y1-o.y0)*(H-T-B);
+ g.font='600 13px system-ui';g.fillStyle=o.tc||C.t;g.fillText(o.title||'',L-34,14);
+ if(!o.ng){g.strokeStyle='#e5edf7';g.fillStyle=C.m;for(let i=0;i<=4;i++){const v=o.y0+(o.y1-o.y0)*i/4;g.beginPath();g.moveTo(L,py(v));g.lineTo(W-R,py(v));g.stroke();g.fillText(v.toFixed(o.d??1),2,py(v)+4)}}
+ (o.hl||[]).forEach(([y,c])=>{g.strokeStyle=c;g.setLineDash([5,4]);g.beginPath();g.moveTo(L,py(y));g.lineTo(W-R,py(y));g.stroke();g.setLineDash([])});
+ ser.forEach(s=>{g.strokeStyle=g.fillStyle=s.c;if(s.t=='p')s.x.forEach((x,i)=>{g.beginPath();g.arc(px(x),py(s.y[i]),2.6,0,7);g.fill()});
+  else if(s.t=='b')s.x.forEach((x,i)=>{const y0=py(Math.max(o.y0,0)),y1=py(s.y[i]);g.fillRect(px(x)-30,y1,60,y0-y1);g.fillStyle=C.t;g.fillText(s.l[i],px(x)-28,y1-5);g.fillStyle=s.c});
+  else{g.beginPath();s.x.forEach((x,i)=>i?g.lineTo(px(x),py(s.y[i])):g.moveTo(px(x),py(s.y[i])));g.stroke()}});
+ (o.txt||[]).forEach(([t,c,y])=>{g.fillStyle=c;g.font='13px system-ui';g.fillText(t,14,y)})}
+/* ================= 1 · CHAÎNE ================= */
+const NAMES=['Matières premières','Préparation des solutions','Filtration','HPLC','Remplissage','Conditionnement','Contrôle final'],MN=['MATIÈRES PREM.',...NAMES,'LIVRAISON'];
+const SPEC=[[98,102,'Dose pesée (%)'],[0,5,'RSD homogénéité (%)'],[1,2.5,'Humidité LOD (%)'],[485,515,'Poids comprimé (mg)'],[2.5,3.5,'Prise de poids enrobage (%)'],[95,105,'Titre HPLC (%)'],[0,5,'Taux de rejet (%)']];
+const DESC=['Les matières premières (principe actif 50 mg + excipients) sont dosées sur cellule de charge ; chaque pesée est tracée.','Principe actif et excipients sont mélangés en mélangeur en V. Plus la ligne va vite, moins le mélange dure : l\'homogénéité baisse.','La poudre est humidifiée, granulée puis séchée en lit fluidisé. Trop d\'humidité fait coller le granulé.','La presse rotative comprime le granulé : le poinçon supérieur descend et forme le comprimé. La force dérive avec l\'usure ; l\'IA suit le poids en continu (EWMA).','Les comprimés tournent dans un tambour où un film protecteur est pulvérisé. Aller plus vite réduit le dépôt.','Un échantillon est analysé par HPLC : le titre doit rester entre 95 et 105 %. C\'est ICI que s\'applique la solution AQbD Validator : suivez les 5 étapes.','Les comprimés conformes sont mis sous blister ; les non conformes (hors 95-105 % au HPLC) sont rejetés.'];
+const CPP=['Écart de dose ±2 %','RSD < 5 %','Humidité 1 à 2,5 %','Poids 500 mg ± 3 %','Prise de poids 2,5-3,5 %','Titre 95-105 % + IT β-expectation','Rejets < 5 %'];
+const ADV=['vérifier la cellule de charge','réduire la vitesse de ligne','réduire l\'humidité / prolonger le séchage','recalibrer la presse','ajuster la pulvérisation','contrôler colonne et étalon HPLC','inspecter le blister'];
+const STEPS=[['Importer les données HPLC','Charger le fichier (niveau, série, aire) et vérifier l\'ordre d\'injection.'],['Définir l\'ATP et le plan','Fixer λ = ±5 % et β = 95 %, puis choisir le plan combiné de 30 points (+ bracketing gélules).'],['Lancer les tests ICH','Mandel, Lack-of-Fit, Cochran, Levene, Shapiro-Wilk, Durbin-Watson ; choisir OLS ou WLS.'],['Lire le profil SFSTP','Si l\'intervalle de tolérance reste dans ±λ, la méthode est validée.'],['Générer le rapport','Rapport ICH Q2(R2) : 390 → 190 injections (−51 %), ROI +220 %.']];
+const SC=['#78909c','#cfd8dc','#ffe082','#ffcc80','#ffffff','#f48fb1','#80deea','#80deea','#80deea'];
+const ch={view:'map',sel:5,step:0,t:0,pd:0,ew:500,lw:500,bl:1,good:0,rej:0,rec:0,auto:false,H:[[],[],[],[],[],[],[]],st:Array(7).fill(0),last:Array(7).fill(-99),acc:[0,.1,.2,.3,.4,.5,.6],log:[],f:0};
+mk('#csl',[['no','Niveau de bruit (%)',.1,5,0.5,.1],['dr','Dérive instrumentale (%)',0,2,.5,.05],['sp','Vitesse de ligne',.3,3,1,.1],['hu','Humidité (% HR)',20,80,45,1]]);
+const sev=(k,v)=>{const[lo,hi]=SPEC[k];if(k==6)return v>hi?2:v>2?1:0;const m=.2*(hi-lo);return v<lo||v>hi?2:v<lo+m||v>hi-m?1:0};
+function logm(m,c){ch.log.unshift([`${ch.t.toFixed(0)}s  ${m}`,c]);ch.log=ch.log.slice(0,5);$('#ailog').innerHTML='<small>ASSISTANT IA</small>'+ch.log.map(l=>`<div class="${l[1]}">${l[0]}</div>`).join('')}
+function recal(){ch.pd=0;ch.ew=500;ch.rec++}
+function sample(k){const sp=V('sp'),no=V('no'),hu=V('hu');let v;
+ if(k==0)v=100*(1+.004*no*rn());
+ else if(k==1)v=ch.bl=Math.max(.3,.8+.9*sp**1.5+.3*no*rn());
+ else if(k==2)v=1.5+.045*(hu-45)+.08*no*rn();
+ else if(k==3){v=ch.lw=500+ch.pd+2*no*rn();ch.ew=.2*v+.8*ch.ew;const d=Math.abs(ch.ew-500);if(ch.auto&&d>10){recal();logm('IA : dérive corrigée, presse recalibrée','ok')}else if(d>8&&ch.f%4==0)logm('IA : dérive de poids détectée (EWMA)','wa')}
+ else if(k==4)v=3/sp**.3+.1*no*rn();
+ else if(k==5){v=100*ch.lw/500+.4*rn()+.15*ch.bl*rn();v<95||v>105?ch.rej++:ch.good++}
+ else v=100*ch.rej/Math.max(1,ch.rej+ch.good);
+ const h=ch.H[k];h.push(v);if(h.length>120)h.shift();const s=sev(k,v);
+ if(s>ch.st[k]&&s>0&&ch.t-ch.last[k]>8){ch.last[k]=ch.t;logm(`${NAMES[k]} : ${s==2?'ALARME':'alerte'} → ${ADV[k]}`,s==2?'ko':'wa')}ch.st[k]=s}
+function tick(dt){const sp=V('sp');ch.t+=dt*sp;ch.f++;ch.pd+=V('dr')*dt*sp;ch.acc.forEach((a,k)=>{ch.acc[k]+=dt*sp;if(ch.acc[k]>=.7){ch.acc[k]-=.7;sample(k)}})}
+const NP=[...Array(9)].map((_,i)=>[70+107*i,i%2?340:170]),CUM=[0];NP.forEach((p,i)=>i&&CUM.push(CUM[i-1]+Math.hypot(p[0]-NP[i-1][0],p[1]-NP[i-1][1])));
+function drawMap(){
+ const host=$('#processFlow');
+ if(!host.dataset.ready){
+  const icons=['⚖','◉','▦','▤','◌','⌁','▣'];
+  host.innerHTML=NAMES.map((name,i)=>`<button type="button" class="process-step ${i===5?'aqbd':''}" data-step="${i}" aria-label="Ouvrir ${name}"><span class="step-number">ÉTAPE 0${i+1}</span><span class="step-icon">${icons[i]}</span><span class="step-name">${name}</span><span class="step-state">Conforme</span>${i===5?'<span class="aqbd-label">★ SOLUTION AQbD</span>':''}</button>`).join('');
+  host.querySelectorAll('.process-step').forEach(b=>b.addEventListener('click',()=>enter(+b.dataset.step)));
+  host.dataset.ready='1';
+ }
+ host.querySelectorAll('.process-step').forEach((el,i)=>{
+  const state=ch.st[i]||0;el.classList.toggle('active',ch.view==='phase'&&ch.sel===i);el.classList.remove('state-1','state-2');if(state)el.classList.add('state-'+state);
+  const label=el.querySelector('.step-state');label.textContent=state===2?'Alerte':state===1?'À surveiller':'Conforme';
+ });
+}
+function mach(k){const g=$('#mach').getContext('2d'),t=ch.t,ph=t*3,P=(i,n)=>(ph/4+i/n)%1;g.clearRect(0,0,1000,300);g.lineWidth=3;g.strokeStyle='#64748b';g.fillStyle='#cbd5e1';
+ const dots=(n,f)=>{for(let i=0;i<n;i++){const[x,y]=f(i);g.beginPath();g.arc(x,y,5,0,7);g.fill()}};
+ if(k==0){g.beginPath();g.moveTo(400,30);g.lineTo(600,30);g.lineTo(530,110);g.lineTo(470,110);g.closePath();g.stroke();dots(8,i=>[500+9*Math.sin(i*2),115+P(i,8)*150]);g.fillRect(430,272,140,14)}
+ if(k==1){g.beginPath();g.arc(500,150,105,0,7);g.stroke();g.strokeStyle=C.c;g.lineWidth=5;g.beginPath();g.moveTo(500-95*Math.cos(ph),150-95*Math.sin(ph));g.lineTo(500+95*Math.cos(ph),150+95*Math.sin(ph));g.stroke();g.fillStyle='#ffe082';dots(30,i=>{const a=ph*.6+i*.9,r=20+75*(i%5)/5;return[500+r*Math.cos(a),150+r*Math.sin(a)]})}
+ if(k==2){g.strokeRect(420,30,160,240);g.fillStyle='#ffcc80';dots(40,i=>{const p=(t*.6+i*.137)%1;return[500+60*Math.sin(i*7+t*4)*(.4+.6*p),255-p*215]})}
+ if(k==3){const u=.5+.5*Math.cos(ph*1.3);g.fillStyle='#475569';g.fillRect(430,150,140,45);g.fillStyle='#cbd5e1';g.fillRect(460,20+95*u,80,70);g.fillStyle='#94a3b8';g.fillRect(460,195,80,80);g.fillStyle='#fff';g.globalAlpha=u<.12?1:.15;g.beginPath();g.arc(500,172,22,0,7);g.fill();g.globalAlpha=1}
+ if(k==4){g.beginPath();g.arc(500,160,105,0,7);g.stroke();g.fillStyle='#f48fb1';dots(14,i=>{const a=-ph*.7+i*.45;return[500+88*Math.cos(a),160+88*Math.sin(a)]});if(Math.sin(ph*5)>0){g.strokeStyle='#f9a8d4';g.lineWidth=2;for(let i=-2;i<=2;i++){g.beginPath();g.moveTo(500+i*10,20);g.lineTo(500+i*26,70);g.stroke()}}}
+ if(k==5){g.strokeRect(120,100,110,100);g.strokeRect(330,50,60,200);g.strokeRect(540,30,400,240);g.beginPath();g.moveTo(230,150);g.lineTo(330,150);g.moveTo(390,150);g.lineTo(540,150);g.stroke();g.fillStyle=C.m;g.font='12px system-ui';g.fillText('Pompe',150,215);g.fillText('Colonne C18',325,268);g.fillText('Détecteur UV',560,52);
+  const A=(ch.H[5].at(-1)??100)/100,n=120,idx=Math.floor((t*18)%n)+1;g.strokeStyle='#4ade80';g.lineWidth=2;g.beginPath();for(let i=0;i<idx;i++){const x=i/n,y=250-14*Math.exp(-(((x-.25)/.03)**2))*4-110*A*Math.exp(-(((x-.6)/.035)**2))+1.5*rn();i?g.lineTo(560+360*x,y):g.moveTo(560+360*x,y)}g.stroke();g.fillStyle='#4ade80';g.fillText('Titre mesuré : '+(A*100).toFixed(1)+' %',560,262)}
+ if(k==6){const nb=ch.good%9;for(let i=0;i<8;i++){g.fillStyle=i<nb?'#7dd3fc':'#1e293b';g.beginPath();g.arc(380+(i%4)*80,100+Math.floor(i/4)*100,30,0,7);g.fill();g.stroke()}}}
+function tiOf(a){if(a.length<8)return null;const m=mean(a),s=sdv(a),k=tq(.975,a.length-1)*Math.sqrt(1+1/a.length);return[m-k*s,m+k*s]}
+function chart(){const k=ch.sel,cv=$('#chart'),[lo,hi,lab]=SPEC[k],h=ch.H[k],p=(hi-lo)*.7,x=h.map((_,i)=>i),o={x0:0,x1:Math.max(30,h.length),y0:lo-p,y1:hi+p,hl:[[lo,C.r],[hi,C.r]],title:lab};
+ if(k!=5||ch.step==3){const s=[{x,y:h,c:C.c}];if(k==5){const ti=tiOf(h.slice(-30));if(ti){o.hl.push([ti[0],C.a],[ti[1],C.a]);o.txt=[[`IT β-exp 95 % : [${ti[0].toFixed(1)} ; ${ti[1].toFixed(1)}] → ${ti[0]>=95&&ti[1]<=105?'CONFORME':'NON CONFORME'}`,ti[0]>=95&&ti[1]<=105?C.g:C.r,250]]}o.title='Étape 4 · Profil SFSTP (lignes orange = IT β)'}return plot(cv,s,o)}
+ const n=h.length,s=ch.step;
+ if(s==0)return plot(cv,[{x,y:h,c:C.c,t:'p'}],{...o,title:`Étape 1 · Import : ${n} injections HPLC`,y0:90,y1:110});
+ if(s==1)return plot(cv,[{x:[1,2],y:[390,190],c:C.r,t:'b',l:['390 inj.','190 inj.']}],{x0:0,x1:3,y0:0,y1:450,d:0,title:'Étape 2 · Plan combiné + bracketing : −51 %'});
+ if(s==2){const m=mean(h),dw=n>3?h.slice(1).reduce((a,v,i)=>a+(v-h[i])**2,0)/h.reduce((a,v)=>a+(v-m)**2,0):0,sl=n>3?wls(x,h,x.map(()=>1))[1]*n:0,hf=h.slice(0,n>>1),h2=h.slice(n>>1),F=n>6?(sdv(hf)/sdv(h2))**2:1,p=n>6?2*Math.min(Fp(F,hf.length-1,h2.length-1),Fp(1/F,h2.length-1,hf.length-1)):1;
+  const L=[['Durbin-Watson d = '+dw.toFixed(2),dw>1.4&&dw<2.6],['Dérive : '+sl.toFixed(2)+' % sur la série',Math.abs(sl)<1],['Variances 1re/2e moitié : p = '+Math.min(1,p).toFixed(3),p>.05]];
+  return plot(cv,[],{ng:1,x0:0,x1:1,y0:0,y1:1,title:'Étape 3 · Tests ICH sur vos injections',txt:L.map((l,i)=>[(l[1]?'OK     ':'ÉCHEC  ')+l[0],l[1]?C.g:C.r,60+i*34]).concat([['Si échec de variance → pondération WLS 1/x²',C.m,190],['Tests complets : onglet 2',C.m,215]])})}
+ const ti=tiOf(h.slice(-30)),ok=ti&&ti[0]>=95&&ti[1]<=105;
+ plot(cv,[],{ng:1,x0:0,x1:1,y0:0,y1:1,title:'Étape 5 · Rapport ICH Q2(R2)',txt:[['Profil SFSTP : '+(ok?'CONFORME':'NON CONFORME / données insuffisantes'),ok?C.g:C.r,60],['Injections : 390 → 190 (−51 %)',C.g,95],['ROI estimé : +220 % dès le 1er cycle',C.g,130],['Déploiement : roadmap de 11 mois',C.m,165],['Rendement ligne : '+(100*ch.good/Math.max(1,ch.good+ch.rej)).toFixed(1)+' %',C.t,200]]})}
+function stepsUI(){const b=$('#steps');b.hidden=ch.sel!=5;if(ch.sel!=5)return;b.innerHTML='<b class="wa">SOLUTION AQbD : 5 étapes à appliquer</b>'+STEPS.map((s,i)=>`<div class="step ${i==ch.step?'on':''}"><b>${i+1}. ${s[0]}</b><br><small>${s[1]}</small></div>`).join('')+'<div class="row"><button id="pv">◀ Étape</button><button id="nx">Étape ▶</button></div>';
+ $('#pv').onclick=()=>{ch.step=Math.max(0,ch.step-1);stepsUI()};$('#nx').onclick=()=>{ch.step=Math.min(4,ch.step+1);stepsUI()}}
+function enter(k){ch.sel=k;ch.step=0;ch.view='phase';drawMap();$('#mapv').hidden=true;$('#phv').hidden=false;$('#desc').innerHTML=`<b class="wa">POSTE ${k+1} · ${NAMES[k]}</b><p>${DESC[k]}</p><small>PARAMÈTRE CRITIQUE</small><br><b>${CPP[k]}</b>`;stepsUI();
+ $('#chips').innerHTML=NAMES.map((n,i)=>`<span class="chip" data-i="${i}" style="border-color:${i==k?C.c:'#334155'}">${i+1} ${n}</span>`).join('');document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>enter(+c.dataset.i))}
+$('#back').onclick=()=>{ch.view='map';$('#mapv').hidden=false;$('#phv').hidden=true;drawMap()};
+
+$('#bf').onclick=()=>{ch.pd+=18;logm('Défaut injecté sur la presse (+18 mg)','wa')};$('#br').onclick=()=>{recal();logm('Recalibrage manuel','ok')};
+$('#ba').onclick=()=>{ch.auto=!ch.auto;$('#ba').textContent='IA auto : '+(ch.auto?'ON':'OFF')};
+function kpi(){const T=ch.good+ch.rej,rate=100*ch.good/Math.max(1,T);$('#kpi').innerHTML=`Conditionnés <b>${ch.good}</b> · Rejetés <b>${ch.rej}</b><br>Rendement <b>${rate.toFixed(1)} %</b> · Dérive presse <b>${ch.pd.toFixed(1)} mg</b><br>Recalibrages <b>${ch.rec}</b>`;$('#kpi-good').textContent=ch.good;$('#kpi-reject').textContent=ch.rej;$('#kpi-line-state').textContent=ch.st.some(v=>v===2)?'Alerte':ch.st.some(v=>v===1)?'À surveiller':'Sous contrôle';$('#kpi-steps').textContent=ch.st.filter(v=>v===0).length+' / 7';}
+/* ================= 2 · STATISTIQUES ================= */
+const LV=[80,90,100,110,120],DS={'Comprimé 50 mg – A':[1e5,400,.5,0,0,1],'Comprimé 50 mg – B':[1.02e5,-300,.45,0,.3,.9],'Crème 0,1 %':[8.5e4,900,.35,4,.3,0],'Gélule 25 mg':[2.1e5,200,.3,0,.5,0],'Gélule 50 mg':[1.05e5,-150,.5,1.5,0,1.1],'Gélule 100 mg':[5.2e4,350,.35,0,.45,.7]};
+const PR={'Comprimé 50 mg':[[.5,.3,0,-.2,-.4],.3,.18],'Crème 0,1 %':[[.9,.6,.2,0,-.3],.35,.2],'Gélules 50 mg (pivot)':[[.4,.2,0,-.1,-.3],.32,.22]};
+for(const k in DS)$('#ds').add(new Option(k));for(const k in PR)$('#pr').add(new Option(k));
+mk('#ssl',[['rsd','RSD répétabilité (%)',.05,2,.5,.05],['h','Hétéroscédasticité h',0,5,0,.1],['curv','Courbure',0,1.5,0,.05],['drift','Dérive instrument',0,2.5,1,.05],['amp','Amplitude du biais',0,5,1,.1],['sr','σ répétabilité (%)',.1,2,.3,.05],['sB','σ effet série (%)',0,1.5,.18,.05],['p','Séries p',2,6,3,1],['n','Répétitions n',2,4,2,1],['lam','Limites ±λ (%)',1,10,5,.5],['beta','Proportion β',.8,.99,.95,.01],['cost','Coût / injection (DZD)',3000,30000,12000,500]],()=>calc());
+let Z,ZB,ZR;const noise=()=>{Z=[...Array(30)].map(rn);ZB=[...Array(30)].map(rn);ZR=[...Array(120)].map(rn)};noise();
+function loadDS(){const c=DS[$('#ds').value];setV('rsd',c[2]);setV('h',c[3]);setV('curv',c[4]);setV('drift',c[5])}
+function loadPR(){const c=PR[$('#pr').value];setV('sr',c[1]);setV('sB',c[2])}
+$('#ds').onchange=()=>{loadDS();calc()};$('#pr').onchange=()=>{loadPR();calc()};$('#renew').onclick=()=>{noise();calc()};loadDS();loadPR();
+let S={};
+function ich(slope,icpt,rsd,hh,cv,dr,Z){const x=[],y=[];
+ for(let i=0;i<30;i++){const xi=LV[i%5];x.push(xi);y.push((icpt+slope*xi+cv*slope*(xi-100)**2/100+dr*slope*(-.5+i/29)+rsd*slope*(xi/100)**hh*Z[i])/slope)}
+ const [o0,o1]=wls(x,y,x.map(()=>1)),[w0,w1]=wls(x,y,x.map(xi=>1/xi**2)),eo=[],ew=[];
+ LV.forEach(l=>{const idx=[...Array(30).keys()].filter(i=>x[i]==l);eo.push(mean(idx.map(i=>100*((y[i]-o0)/o1)/l))-100);ew.push(mean(idx.map(i=>100*((y[i]-w0)/w1)/l))-100)});
+ const r=y.map((v,i)=>v-o0-o1*x[i]),sse1=r.reduce((a,v)=>a+v*v,0),xs=x.map(v=>(v-100)/20),sse2=quadSSE(xs,y),grp=LV.map(l=>[...Array(30).keys()].filter(i=>x[i]==l));
+ const sspe=grp.reduce((a,g)=>{const m=mean(g.map(i=>y[i]));return a+g.reduce((b,i)=>b+(y[i]-m)**2,0)},0),pM=Fp((sse1-sse2)/(sse2/27),1,27),pL=Fp(((sse1-sspe)/3)/(sspe/25),3,25);
+ const vs=grp.map(g=>sdv(g.map(i=>y[i]))**2),Cc=Math.max(...vs)/vs.reduce((a,v)=>a+v,0);
+ const zl=grp.map(g=>{const a=g.map(i=>r[i]).sort((p,q)=>p-q),md=(a[2]+a[3])/2;return g.map(i=>Math.abs(r[i]-md))}),gm=mean(zl.flat()),ssb=zl.reduce((a,g)=>a+6*(mean(g)-gm)**2,0),ssw=zl.reduce((a,g)=>a+g.reduce((b,v)=>b+(v-mean(g))**2,0),0),pLev=Fp((ssb/4)/(ssw/25),4,25);
+ const dw=r.slice(1).reduce((a,v,i)=>a+(v-r[i])**2,0)/sse1;
+ const T=[['Mandel (linéaire suffisant)','p = '+pM.toFixed(3),pM>.05],['Lack-of-Fit','p = '+pL.toFixed(3),pL>.05],['Cochran (variances)','C = '+Cc.toFixed(2)+' (< 0,54)',Cc<.5441],['Levene (homoscédasticité)','p = '+pLev.toFixed(3),pLev>.05],['Durbin-Watson (résidus)','d = '+dw.toFixed(2)+' (1,4–2,6)',dw>1.4&&dw<2.6]];
+ const nok=T.filter(t=>t[2]).length,wl=pLev<=.05;return{x,y,r,eo,ew,T,nok,wl}}
+function calc(){const[slope,icpt]=DS[$('#ds').value],rsd=V('rsd'),hh=V('h'),cv=V('curv'),dr=V('drift'),{x,y,r,eo,ew,T,nok,wl}=ich(slope,icpt,rsd,hh,cv,dr,Z);
+ const p=V('p'),n=V('n'),lam=V('lam'),be=V('beta'),amp=V('amp'),sr=V('sr'),sB=V('sB'),bias=PR[$('#pr').value][0],M=[],LO=[],HI=[];
+ LV.forEach((l,li)=>{const sm=[],all=[];for(let j=0;j<p;j++){const v=[...Array(n)].map((_,i)=>100+amp*bias[li]+sB*ZB[li*6+j]+sr*ZR[(li*6+j)*4+i]);sm.push(mean(v));all.push(v)}
+  const m=mean(sm),msb=n*sm.reduce((a,v)=>a+(v-m)**2,0)/(p-1),msw=all.reduce((a,v,j)=>a+v.reduce((b,q)=>b+(q-sm[j])**2,0),0)/(p*(n-1)),s2=Math.max(msw,1e-9),sb2=Math.max(0,(msb-msw)/n),R=sb2/s2,nu=(R+1)**2/((R+1/n)**2/(p-1)+(1-1/n)/(p*n)),hw=tq((1+be)/2,nu)*Math.sqrt((sb2+s2)*(1+(R*n+1)/((R+1)*p*n)));M.push(m);LO.push(m-hw);HI.push(m+hw)});
+ const valid=LO.every(v=>v>=100-lam)&&HI.every(v=>v<=100+lam),sav=190*0+(390-190)*V('cost'),roi=(sav-750000)/750000*100;
+ S={slope,icpt,rsd,hh,cv,dr,lam,be,p,n,amp,sr,sB,bias};
+ plot($('#c1'),[{x:[...Array(30).keys()],y:r.map(v=>100*v/mean(y)),c:C.c}],{x0:0,x1:29,y0:-4,y1:4,hl:[[0,C.m]],title:'Résidus OLS en ordre d\'injection (% du signal) → dérive'});
+ plot($('#c2'),[{x:LV,y:eo,c:C.r},{x:LV,y:ew,c:C.g}],{x0:75,x1:125,y0:-6,y1:6,hl:[[0,C.m]],title:'Erreur de rétro-calcul (%) : OLS rouge · WLS 1/x² vert'});
+ plot($('#c3'),[{x:LV,y:M,c:C.c},{x:LV,y:LO,c:C.a},{x:LV,y:HI,c:C.a}],{x0:75,x1:125,y0:100-lam*1.6,y1:100+lam*1.6,hl:[[100-lam,C.r],[100+lam,C.r]],title:`Profil d'exactitude SFSTP (IT β-expectation ${(be*100).toFixed(0)} %)`,txt:[[valid?'PROFIL CONFORME':'PROFIL NON CONFORME',valid?C.g:C.r,250]]});
+ $('#tests').innerHTML=`<b>Tests ICH Q2(R2)</b> <small>(${nok}/5 réussis)</small><table>${T.map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td class="${t[2]?'ok':'ko'}">${t[2]?'OK':'ÉCHEC'}</td></tr>`).join('')}</table>
+ <p>Pondération retenue : <b>${wl?'WLS 1/x²':'OLS'}</b> <small>(Levene ${wl?'échoue':'réussi'})</small></p>
+ <p>Profil SFSTP : <b class="${valid?'ok':'ko'}">${valid?'CONFORME':'NON CONFORME'}</b> · Injections par cycle : <b>390 → 190 (−51 %)</b> · ROI : <b class="${roi>0?'ok':'ko'}">${roi>=0?'+':''}${roi.toFixed(0)} %</b></p><small>Shapiro-Wilk, Monte-Carlo et bracketing : dans les versions Python et MATLAB.</small>`;
+ if(!$('#t3').hidden){exportCode();results()}}
+function exportCode(){const s=S,b=s.bias.map(v=>v*s.amp).map(v=>v.toFixed(3)).join(', ');
+ $('#xml').textContent=`% dataset "${$('#ds').value}"\ncfg = [${s.slope.toExponential(2)}  ${s.icpt}  ${s.rsd}  ${s.hh}  ${s.cv}  ${s.dr}];\n% produit "${$('#pr').value}"\nprodBias = [${b}];  prodSr = ${s.sr};  prodSB = ${s.sB};\n% p=${s.p}  n=${s.n}  lam=${s.lam}  beta=${s.be}`}
+$('#cp2').onclick=()=>navigator.clipboard.writeText($('#xml').textContent);
+let sd=11;const rs=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296},rg=()=>Math.sqrt(-2*Math.log(rs()||1e-9))*Math.cos(6.2831853*rs());
+const ZF=[...Array(30)].map(rg),ZBF=[...Array(30)].map(rg),ZRF=[...Array(120)].map(rg);
+function results(){const row=[],pl=s=>s?'<b class="ok">OUI</b>':'<b class="ko">NON</b>';let all5=0,sf=0;
+ for(const k in DS){const[sl,ic,rsd,hh,cv,dr]=DS[k],o=ich(sl,ic,rsd,hh,cv,dr,ZF),mo=Math.max(...o.eo.map(Math.abs)),mw=Math.max(...o.ew.map(Math.abs)),ok=mw<5;if(o.nok==5)all5++;if(ok)sf++;
+  row.push(`<tr><td>${k}</td>${o.T.map(q=>`<td class="${q[2]?'ok':'ko'}">${q[2]?'✔':'✘'}</td>`).join('')}<td>${o.wl?'WLS':'OLS'}</td><td>${mo.toFixed(1)} / ${mw.toFixed(1)}</td><td>${pl(ok)}</td><td>${pl(o.nok==5)}</td></tr>`)}
+ $('#mtab').innerHTML='<tr><th>Dataset</th><th>Mandel</th><th>Lack-of-Fit</th><th>Cochran</th><th>Levene</th><th>Durbin-W.</th><th>Pondération</th><th>Err. max OLS / WLS (%)</th><th>SFSTP conforme</th><th>5/5 tests</th></tr>'+row.join('');
+ const p=V('p'),n=V('n'),lam=V('lam'),be=V('beta'),amp=V('amp');let pc=0;const pr=[];
+ for(const k in PR){const[bias,sr,sB]=PR[k];let lo=1e9,hi=-1e9;LV.forEach((l,li)=>{const sm=[],all=[];for(let j=0;j<p;j++){const v=[...Array(n)].map((_,i)=>100+amp*bias[li]+sB*ZBF[li*6+j]+sr*ZRF[(li*6+j)*4+i]);sm.push(mean(v));all.push(v)}
+  const m=mean(sm),msb=n*sm.reduce((a,v)=>a+(v-m)**2,0)/(p-1),msw=all.reduce((a,v,j)=>a+v.reduce((b,q)=>b+(q-sm[j])**2,0),0)/(p*(n-1)),s2=Math.max(msw,1e-9),sb2=Math.max(0,(msb-msw)/n),R=sb2/s2,nu=(R+1)**2/((R+1/n)**2/(p-1)+(1-1/n)/(p*n)),hw=tq((1+be)/2,nu)*Math.sqrt((sb2+s2)*(1+(R*n+1)/((R+1)*p*n)));lo=Math.min(lo,m-hw);hi=Math.max(hi,m+hw)});
+  const ok=lo>=100-lam&&hi<=100+lam;if(ok)pc++;pr.push(`<tr><td>${k}</td><td>${lo.toFixed(1)} – ${hi.toFixed(1)} %</td><td>${pl(ok)}</td></tr>`)}
+ $('#mprod').innerHTML=`<tr><th>Produit</th><th>IT β-expectation (min–max)</th><th>Dans ±${lam} %</th></tr>`+pr.join('');
+ const roi=((390-190)*V('cost')-750000)/750000*100;
+ $('#mkp').innerHTML=[['Datasets conformes SFSTP',sf+' / 6',C.g],['Datasets passant 5/5 tests',all5+' / 6',all5?C.g:C.a],['Produits conformes',pc+' / 3',C.c],['Injections par cycle','390 → 190',C.a],['ROI estimé',(roi>=0?'+':'')+roi.toFixed(0)+' %',C.g]].map(q=>`<div style="border-top-color:${q[2]}"><small>${q[0]}</small><b>${q[1]}</b></div>`).join('')}
+setInterval(()=>{if($('#live').checked&&!$('#t2').hidden){noise();calc()}},1800);
+
+/* ===== Visualisations du dashboard de référence ===== */
+function drawHeroQuality(){
+ const cv=$('#hero-quality-chart');if(!cv)return;const g=cv.getContext('2d'),w=cv.width,h=cv.height,L=58,R=18,T=20,B=38;
+ g.clearRect(0,0,w,h);g.fillStyle='#fff';g.fillRect(0,0,w,h);
+ const py=v=>h-B-(v-90)/12*(h-T-B),px=i=>L+i/100*(w-L-R);
+ g.fillStyle='#e9f3ff';g.fillRect(L,py(105),w-L-R,py(95)-py(105));
+ g.strokeStyle='#e2eaf5';g.lineWidth=1;g.font='13px Segoe UI';g.fillStyle='#17365f';
+ for(let v=90;v<=102;v+=2){g.beginPath();g.moveTo(L,py(v));g.lineTo(w-R,py(v));g.stroke();g.fillText(v,L-34,py(v)+4)}
+ [95,105].forEach(v=>{g.strokeStyle='#2581d7';g.setLineDash([7,5]);g.beginPath();g.moveTo(L,py(v));g.lineTo(w-R,py(v));g.stroke();g.setLineDash([])});
+ g.strokeStyle='#b6cce8';g.beginPath();g.moveTo(L,py(100));g.lineTo(w-R,py(100));g.stroke();
+ const vals=ch.H[5].length?ch.H[5].slice(-35):Array.from({length:35},(_,i)=>98+Math.sin(i*.55)*.18);
+ g.strokeStyle='#2185dc';g.lineWidth=3;g.beginPath();vals.forEach((v,i)=>{let x=L+i/(Math.max(1,vals.length-1))*(w-L-R),y=py(Math.max(90,Math.min(105,v)));i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+ vals.forEach((v,i)=>{let x=L+i/(Math.max(1,vals.length-1))*(w-L-R);g.fillStyle='#2185dc';g.beginPath();g.arc(x,py(Math.max(90,Math.min(105,v))),3.5,0,Math.PI*2);g.fill()});
+ g.strokeStyle='#d94355';g.setLineDash([6,5]);let ix=L+(w-L-R)*.62;g.beginPath();g.moveTo(ix,T);g.lineTo(ix,h-B);g.stroke();g.setLineDash([]);
+ g.fillStyle='#fff0f2';g.fillRect(ix+6,T+3,110,23);g.fillStyle='#b52e45';g.fillText('Perturbation',ix+12,T+19);
+ g.fillStyle='#17365f';for(let i=0;i<=5;i++)g.fillText(String(i*200),L+i/5*(w-L-R)-8,h-13);g.fillText('Temps (min)',w/2-35,h-2);
+}
+function drawHeroImpact(){
+ const cv=$('#hero-impact-chart');if(!cv)return;const g=cv.getContext('2d'),w=cv.width,h=cv.height,L=48,R=14,T=12,B=32;g.clearRect(0,0,w,h);g.fillStyle='#fff';g.fillRect(0,0,w,h);
+ const py=v=>h-B-(v-90)/13*(h-T-B),px=i=>L+i/19*(w-L-R);
+ g.font='12px Segoe UI';g.fillStyle='#627895';g.strokeStyle='#e6edf6';
+ for(let v=90;v<=102;v+=3){g.beginPath();g.moveTo(L,py(v));g.lineTo(w-R,py(v));g.stroke();g.fillText(v,L-29,py(v)+4)}
+ const base=[],noise=[],drift=[];for(let i=0;i<20;i++){base.push(100-i*.035);noise.push(100-i*.065);drift.push(100-i*.22)}
+ [[base,'#2386d9'],[noise,'#e89a2b'],[drift,'#45aa7b']].forEach(([a,c])=>{g.strokeStyle=c;g.lineWidth=2.8;g.beginPath();a.forEach((v,i)=>i?g.lineTo(px(i),py(v)):g.moveTo(px(i),py(v)));g.stroke();a.forEach((v,i)=>{g.fillStyle=c;g.beginPath();g.arc(px(i),py(v),3,0,7);g.fill()})});
+ for(let i=0;i<=5;i++)g.fillText(String(i*200),px(i*3.8)-8,h-10);
+}
+function drawHeroMulti(){
+ const cv=$('#hero-multi-chart');if(!cv)return;const g=cv.getContext('2d'),w=cv.width,h=cv.height,L=50,R=15,T=16,B=45;g.clearRect(0,0,w,h);g.fillStyle='#fff';g.fillRect(0,0,w,h);
+ const py=v=>h-B-v*(h-T-B),groups=[['SFSTP',[.78,.62,.67,.69]],['CONFORME',[.76,.65,.68,.74]],['Durbin-Watson',[.76,.65,.67,.75]]],cols=['#2583d2','#8766b7','#e99a2d','#4caf7b'];
+ g.font='12px Segoe UI';g.fillStyle='#627895';g.strokeStyle='#e5edf6';for(let i=0;i<=5;i++){let v=i/5;g.beginPath();g.moveTo(L,py(v));g.lineTo(w-R,py(v));g.stroke();g.fillText(v.toFixed(1),8,py(v)+4)}
+ groups.forEach((gr,j)=>{gr[1].forEach((v,k)=>{let x=L+70+j*170+k*25;g.fillStyle=cols[k];g.fillRect(x,py(v),21,h-B-py(v));g.strokeStyle='#31577d';g.beginPath();g.moveTo(x+10,py(v)-9);g.lineTo(x+10,py(v)+4);g.stroke()});g.fillStyle='#17365f';g.fillText(gr[0],L+62+j*170,h-14)});
+}
+function updateHeroStatus(){
+ const vals=ch.H[5],v=vals.length?vals[vals.length-1]:98.7,ok=vals.length? v>=95&&v<=105:true;
+ $('#hero-quality-value').textContent=(Math.max(0,Math.min(100,98.7-Math.abs(v-100)*.8))).toFixed(1)+'%';
+ $('#hero-recommend-title').textContent=ok?'✓  Processus sous contrôle':'⚠  Action corrective requise';
+ $('#hero-recommend-text').textContent=ok?'Aucune action corrective requise.':'Vérifier le procédé HPLC et recalibrer les paramètres.';
+ const card=$('.hero-recommend');card.classList.toggle('warning',!ok);
+ drawHeroQuality();drawHeroImpact();drawHeroMulti();
+}
+$('#resume-process').onclick=()=>{processPaused=false;$('#resume-process').textContent='▶  Reprendre';$('#hero-recommend-text').textContent='Acquisition des mesures en temps réel.'};
+$('#pause-process').onclick=()=>{processPaused=true;$('#hero-recommend-text').textContent='Simulation mise en pause.'};
+$('#bf').onclick=()=>{const mode=$('#disturbance').value;if(mode==='drift'){ch.pd+=12;setV('dr',Math.min(2,V('dr')+.3));logm('Dérive instrumentale injectée','wa')}else if(mode==='noise'){setV('no',Math.min(5,V('no')+1));logm('Bruit de mesure augmenté','wa')}else{ch.pd+=18;setV('no',Math.min(5,V('no')+.8));logm('Perturbation combinée injectée','wa')}};
+$('#br').onclick=()=>{ch.pd=0;ch.ew=500;setV('no',.5);setV('dr',.5);ch.st=Array(7).fill(0);logm('Paramètres réinitialisés','ok')};
+let processPaused=false;
+
+/* ================= boucle ================= */
+let last=performance.now();
+(function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;if(!processPaused)tick(dt);
+ if(!$('#t1').hidden){if(ch.view=='map')drawMap();else{mach(ch.sel);if(ch.f%3==0)chart()}if(ch.f%10==0)kpi();if(ch.f%3===0)updateHeroStatus()}requestAnimationFrame(loop)})(last);
+enter(5);$('#back').onclick();drawMap();kpi();calc();updateHeroStatus();
+
+/* ================ SIMULATION MATLAB INTERACTIVE ================
+   Simulation front-end du comportement du modèle, avec perturbations contrôlables.
+   Les courbes sont recalculées localement à chaque pas d'acquisition. */
+(()=>{
+ const el=id=>document.getElementById(id), clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ let running=true, t=0, bias=0, noise=.35, drift=0, hetero=0, history=[], impacts=[0,0,0,0], tickCount=0;
+ const randn=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+ const addLog=(msg,type='')=>{const d=document.createElement('div');d.className=type;d.textContent=new Date().toLocaleTimeString('fr-FR')+' — '+msg;el('sim-log').append(d);while(el('sim-log').children.length>7)el('sim-log').removeChild(el('sim-log').children[1])};
+ const setStatus=(s)=>el('sim-status').textContent=s;
+ const sync=()=>{el('sim-bias-val').textContent=bias.toFixed(1)+' %';el('sim-noise-val').textContent=noise.toFixed(2)+' %';el('sim-drift-val').textContent=drift.toFixed(2)+' %/min';el('sim-hetero-val').textContent=hetero.toFixed(1)};
+ function drawLine(canvas,values){const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height,L=48,R=18,T=18,B=30; c.clearRect(0,0,w,h);c.fillStyle='#fff';c.fillRect(0,0,w,h);const y0=90,y1=110,px=i=>L+i/(Math.max(1,values.length-1))*(w-L-R),py=v=>T+(y1-v)/(y1-y0)*(h-T-B);
+  c.font='12px Segoe UI';c.strokeStyle='#e9edf3';c.fillStyle='#75839a';for(let v=90;v<=110;v+=5){c.beginPath();c.moveTo(L,py(v));c.lineTo(w-R,py(v));c.stroke();c.fillText(v+' %',7,py(v)+4)}
+  [[95,'#c24145'],[105,'#c24145']].forEach(([v,col])=>{c.strokeStyle=col;c.setLineDash([6,5]);c.beginPath();c.moveTo(L,py(v));c.lineTo(w-R,py(v));c.stroke();c.setLineDash([])});
+  c.strokeStyle='#16845b';c.setLineWidth=1.5;c.setLineDash([3,4]);c.beginPath();c.moveTo(L,py(100));c.lineTo(w-R,py(100));c.stroke();c.setLineDash([]);
+  c.strokeStyle='#2457a6';c.lineWidth=2.5;c.beginPath();values.forEach((v,i)=>i?c.lineTo(px(i),py(v)):c.moveTo(px(i),py(v)));c.stroke();
+  c.fillStyle='#75839a';c.fillText('Temps / injections →',w/2-45,h-7);
+ }
+ function drawImpact(){const c=el('sim-impact-chart').getContext('2d'),w=500,h=300,L=55,B=40,T=20,R=18;c.clearRect(0,0,w,h);const max=Math.max(2,...impacts,Math.abs(bias)+noise+Math.abs(drift)*8),py=v=>h-B-v/max*(h-T-B);c.font='12px Segoe UI';c.fillStyle='#748197';c.strokeStyle='#e9edf3';for(let i=0;i<=4;i++){let v=max*i/4;c.beginPath();c.moveTo(L,py(v));c.lineTo(w-R,py(v));c.stroke();c.fillText(v.toFixed(1)+'%',8,py(v)+4)}const names=['Biais','Bruit','Dérive','Hétéro.'];impacts=[Math.abs(bias),noise,Math.abs(drift)*8,hetero*.55];names.forEach((n,i)=>{let x=L+35+i*105,bh=h-B-py(impacts[i]);c.fillStyle=['#2457a6','#168caa','#b7791f','#7c6bb1'][i];c.fillRect(x,py(impacts[i]),42,bh);c.fillStyle='#53647c';c.fillText(n,x-5,h-15);c.fillText(impacts[i].toFixed(2),x,py(impacts[i])-7)})}
+ function update(){if(!running)return;t+=1;tickCount++;const trend=drift*(t/60),sigma=noise*(1+hetero*.12),measured=100+bias+trend+randn()*sigma,err=measured-100;history.push(measured);if(history.length>70)history.shift();const rsd=sigma;
+  el('sim-response').textContent=measured.toFixed(2)+' %';el('sim-error').textContent=(err>=0?'+':'')+err.toFixed(2)+' %';el('sim-rsd').textContent=rsd.toFixed(2)+' %';const valid=Math.abs(err)<=5&&rsd<=1.5;el('sim-valid').textContent=valid?'CONFORME':'HORS LIMITES';el('sim-valid').className=valid?'ok':'ko';drawLine(el('sim-response-chart'),history);drawImpact();
+  if(!valid&&tickCount%4===0){setStatus('Alerte : la réponse simulée sort de la zone de conformité. Appliquer une action corrective.');}
+ }
+ const inject=(kind)=>{if(kind==='all'){bias=3.8;noise=1.65;drift=.8;hetero=3.2;setStatus('Perturbation combinée injectée : biais, bruit, dérive et hétéroscédasticité.');addLog('Perturbation combinée appliquée au procédé.','alert')}
+  if(kind==='drift'){drift=1.1;setStatus('Dérive instrumentale activée : le signal évolue progressivement au fil des injections.');addLog('Dérive instrumentale ajoutée (+1,10 %/min).','alert')}
+  if(kind==='noise'){noise=1.8;hetero=2.4;setStatus('Bruit accru et variance non constante : observer la dispersion des mesures.');addLog('Bruit de mesure et hétéroscédasticité augmentés.','alert')}
+  [ ['sim-bias','sim-bias-val',bias,v=>v.toFixed(1)+' %'],['sim-noise-level','sim-noise-val',noise,v=>v.toFixed(2)+' %'],['sim-drift-level','sim-drift-val',drift,v=>v.toFixed(2)+' %/min'],['sim-hetero','sim-hetero-val',hetero,v=>v.toFixed(1)] ].forEach(([id,label,v,fmt])=>{el(id).value=v;el(label).textContent=fmt(v)});sync();};
+ el('sim-pause').onclick=()=>{running=!running;el('sim-pause').textContent=running?'Ⅱ Mettre en pause':'▶ Reprendre';el('matlab-live').textContent=running?'Simulation active':'Simulation en pause';el('matlab-live').style.color=running?'var(--green)':'var(--amber)';setStatus(running?'Acquisition reprise.':'Acquisition suspendue — les courbes sont figées.');addLog(running?'Simulation reprise.':'Simulation mise en pause.')};
+ el('sim-disturb').onclick=()=>inject('all');el('sim-drift').onclick=()=>inject('drift');el('sim-noise').onclick=()=>inject('noise');
+ el('sim-recover').onclick=()=>{bias=0;noise=.35;drift=0;hetero=0;sync();['sim-bias','sim-noise-level','sim-drift-level','sim-hetero'].forEach((id,i)=>el(id).value=[0,.35,0,0][i]);setStatus('Retour aux conditions nominales : le système retrouve progressivement une réponse centrée sur 100 %.');addLog('Action corrective : retour aux paramètres nominaux.','good')};
+ el('sim-reset').onclick=()=>{bias=0;noise=.35;drift=0;hetero=0;t=0;tickCount=0;history=[];sync();['sim-bias','sim-noise-level','sim-drift-level','sim-hetero'].forEach((id,i)=>el(id).value=[0,.35,0,0][i]);setStatus('Simulation réinitialisée. Conditions nominales restaurées.');addLog('Réinitialisation complète.','good')};
+ const sliders=[['sim-bias',v=>bias=v],['sim-noise-level',v=>noise=v],['sim-drift-level',v=>drift=v],['sim-hetero',v=>hetero=v]];sliders.forEach(([id,fn])=>el(id).addEventListener('input',e=>{fn(+e.target.value);sync();setStatus('Paramètres modifiés manuellement — la simulation intègre les nouvelles conditions.')}));
+ sync();drawLine(el('sim-response-chart'),[100]);drawImpact();setInterval(update,650);
+})();
+</script></body></html>
